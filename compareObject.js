@@ -1,10 +1,10 @@
-export const createCompareObject = (comparableSchema) => {
+export const createCompareObject = comparableSchema => {
     return (oldVersion, newVersion, context) => {
-        const {add, remove, weight, incomparable} = context;
+        const { add, remove, weight, incomparable } = context;
         let compareCost = 0;
         const compareObj = (innerSchema, innerOld, innerNew) => {
             const resObj = {};
-            for(const key of Object.keys(innerOld)) {
+            for (const key of Object.keys(innerOld)) {
                 const oldValue = innerOld[key];
                 const newValue = innerNew[key];
                 const schemaAtKey = innerSchema[key];
@@ -12,14 +12,18 @@ export const createCompareObject = (comparableSchema) => {
                     // We've found a sub-key that is comparable.
                     const compared = schemaAtKey(oldValue, newValue, context);
                     if (compared === incomparable) {
-                        return incomparable
+                        return incomparable;
                     }
-                    const {result, cost} = compared;
+                    const { result, cost } = compared;
                     resObj[key] = result;
                     compareCost += cost;
                 } else if (typeof schemaAtKey === 'object') {
                     // We need to recurse farther into the comparator.
-                    const compareResult = compareObj(schemaAtKey, oldValue, newValue);
+                    const compareResult = compareObj(
+                        schemaAtKey,
+                        oldValue,
+                        newValue
+                    );
                     if (compareResult === incomparable) {
                         return incomparable;
                     }
@@ -29,14 +33,18 @@ export const createCompareObject = (comparableSchema) => {
                 }
             }
             return resObj;
-        }
-        const compareResult = compareObj(comparableSchema, oldVersion, newVersion);
+        };
+        const compareResult = compareObj(
+            comparableSchema,
+            oldVersion,
+            newVersion
+        );
         if (compareResult === incomparable) {
             return {
                 result: [remove(oldVersion), add(newVersion)],
                 cost: weight(oldVersion) + weight(newVersion),
             };
         }
-        return {result: compareResult, cost: compareCost};
-    }
-}
+        return { result: compareResult, cost: compareCost };
+    };
+};

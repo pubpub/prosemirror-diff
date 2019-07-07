@@ -1,7 +1,7 @@
-export const createCompareMarks = (ignored) => (oldValue, newValue, context) => {
-    const {incomparable} = context;
+export const createCompareMarks = ignored => (oldValue, newValue, context) => {
+    const { incomparable } = context;
     if (!oldValue && !newValue) {
-        return {result: oldValue, cost: 0};
+        return { result: oldValue, cost: 0 };
     }
     if (!oldValue || !newValue) {
         return incomparable;
@@ -18,7 +18,7 @@ export const createCompareMarks = (ignored) => (oldValue, newValue, context) => 
         return incomparable;
     }
     if (oldTypes.every(mark => newTypes.includes(mark))) {
-        return {result: oldValue, cost: 0};
+        return { result: oldValue, cost: 0 };
     }
     return incomparable;
-}
+};

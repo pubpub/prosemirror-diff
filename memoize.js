@@ -1,5 +1,5 @@
-export const memoizeCompareFn = (comparable) => {
-    return (memoizeMap) => (oldVersion, newVersion, ...restArgs) => {
+export const memoizeCompareFn = comparable => {
+    return memoizeMap => (oldVersion, newVersion, ...restArgs) => {
         let innerMap = memoizeMap.get(oldVersion);
         if (!innerMap) {
             innerMap = new Map();
@@ -12,5 +12,5 @@ export const memoizeCompareFn = (comparable) => {
         const result = comparable(oldVersion, newVersion, ...restArgs);
         innerMap.set(newVersion, result);
         return result;
-    }
-}
+    };
+};
