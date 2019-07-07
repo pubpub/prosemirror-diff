@@ -14,5 +14,7 @@
     "esm": "^3.2.25",
     "prettier": "^1.18.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "diff": "^4.0.1"
+  }
 }
