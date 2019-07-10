@@ -1,8 +1,8 @@
-import { diffWords } from 'diff';
+import { diffWords, diffChars } from 'diff';
 
-export const compareText = (oldVersion, newVersion, context) => {
+export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
     const { add, remove } = context;
-    const diffResult = diffWords(oldVersion, newVersion);
+    const diffResult = diffFn(oldVersion, newVersion);
     const result = [];
     let cost = 0;
     for (let i = 0; i < diffResult.length; i++) {
@@ -18,4 +18,23 @@ export const compareText = (oldVersion, newVersion, context) => {
         }
     }
     return { result, cost };
+};
+
+export const compareText = (oldVersion, newVersion, context) => {
+    const diffedWithWords = compareTextWith(
+        oldVersion,
+        newVersion,
+        context,
+        diffWords
+    );
+    // const diffedWithChars = compareTextWith(
+    //     oldVersion,
+    //     newVersion,
+    //     context,
+    //     diffChars
+    // );
+    // if (diffedWithChars.cost < diffedWithWords.cost) {
+    //     return diffedWithChars;
+    // }
+    return diffedWithWords;
 };

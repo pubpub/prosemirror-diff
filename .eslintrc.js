@@ -3,6 +3,7 @@ module.exports = {
         "browser": true,
         "es6": true
     },
+    "plugins": ["prettier"],
     "extends": ["eslint:recommended", "prettier"],
     "globals": {
         "Atomics": "readonly",
@@ -13,5 +14,6 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "prettier/prettier": "error",
     }
 };

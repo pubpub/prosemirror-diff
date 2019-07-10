@@ -1,8 +1,8 @@
 {
-  "name": "prosemirror-diff",
+  "name": "@pubpub/prosemirror-diff",
   "version": "1.0.0",
   "description": "",
-  "main": "diff.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,10 +11,14 @@
   "devDependencies": {
     "eslint": "^6.0.1",
     "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
     "esm": "^3.2.25",
     "prettier": "^1.18.2"
   },
   "dependencies": {
-    "diff": "^4.0.1"
+    "diff": "^4.0.1",
+    "prosemirror-model": "^1.7.1",
+    "prosemirror-tables": "^0.8.1",
+    "prosemirror-view": "^1.9.11"
   }
 }

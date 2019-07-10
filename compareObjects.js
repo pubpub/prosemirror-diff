@@ -1,10 +1,13 @@
-export const createCompareObject = comparableSchema => {
+export const createCompareObjects = comparableSchema => {
     return (oldVersion, newVersion, context) => {
-        const { add, remove, weight, incomparable } = context;
+        const { replace, weight, incomparable } = context;
         let compareCost = 0;
         const compareObj = (innerSchema, innerOld, innerNew) => {
             const resObj = {};
-            for (const key of Object.keys(innerOld)) {
+            for (const key of new Set([
+                ...Object.keys(innerOld),
+                ...Object.keys(innerNew),
+            ])) {
                 const oldValue = innerOld[key];
                 const newValue = innerNew[key];
                 const schemaAtKey = innerSchema[key];
@@ -41,7 +44,7 @@ export const createCompareObject = comparableSchema => {
         );
         if (compareResult === incomparable) {
             return {
-                result: [remove(oldVersion), add(newVersion)],
+                result: replace(oldVersion, newVersion),
                 cost: weight(oldVersion) + weight(newVersion),
             };
         }
