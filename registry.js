@@ -12,7 +12,7 @@ const withContent = {
         },
         weight: (element, weight) =>
             element.content
-                ? 2 + element.content.map(weight).reduce((a, b) => a + b)
+                ? 2 + 0.8 * element.content.map(weight).reduce((a, b) => a + b)
                 : 2,
     },
     render: {
