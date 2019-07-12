@@ -1,5 +1,4 @@
 import { getTypeFromRegistry } from './registry';
-// import { memoizeCompareFn } from "./memoize";
 
 export const diffObjectSymbol = Symbol.for('isDiffObject');
 const incomparable = Symbol.for('incomparable');
@@ -26,23 +25,21 @@ const replace = (removed, added) => {
     };
 };
 
-const innerDiff = (oldVersion, newVersion, registry) => {
+const innerDiff = (oldVersion, newVersion, registry, memoizer) => {
     const compare = (ov, nv, context) => {
         if (ov.type !== nv.type) {
             return incomparable;
         }
-        return getTypeFromRegistry(registry, ov.type).diff.compare(
-            ov,
-            nv,
-            context
-        );
+
+        return memoizer.compare(
+            getTypeFromRegistry(registry, ov.type).diff.compare
+        )(ov, nv, context);
     };
 
     const weight = element => {
-        const resultWeight = getTypeFromRegistry(
-            registry,
-            element.type
-        ).diff.weight(element, weight);
+        const resultWeight = memoizer.weight(
+            getTypeFromRegistry(registry, element.type).diff.weight
+        )(element, weight);
         if (isNaN(resultWeight)) {
             throw new Error('prosemirror-diff produced invalid element weight');
         }
@@ -56,13 +53,11 @@ const innerDiff = (oldVersion, newVersion, registry) => {
         compare,
         weight,
         incomparable,
+        memoizer,
     });
 };
 
-export const diff = (oldVersion, newVersion, registry) => {
-    // const memoizedRegistry = new Map();
-    // Object.entries(registry).forEach(([key, value]) => {
-    //     memoizedRegistry[key] = memoizeCompareFn(value);
-    // });
-    return innerDiff(oldVersion, newVersion, registry).result;
+export const diff = (oldVersion, newVersion, registry, memoizer) => {
+    const { result } = innerDiff(oldVersion, newVersion, registry, memoizer);
+    return result;
 };

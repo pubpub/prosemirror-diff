@@ -1,6 +1,7 @@
-import { diffWords, diffChars } from 'diff';
+import { diffWordsWithSpace } from 'diff';
 
 export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
+    console.time('compareText');
     const { add, remove } = context;
     const diffResult = diffFn(oldVersion, newVersion);
     const result = [];
@@ -17,6 +18,8 @@ export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
             result.push(subresult.value);
         }
     }
+    console.timeEnd('compareText');
+    console.log(oldVersion, newVersion);
     return { result, cost };
 };
 
@@ -25,16 +28,7 @@ export const compareText = (oldVersion, newVersion, context) => {
         oldVersion,
         newVersion,
         context,
-        diffWords
+        diffWordsWithSpace
     );
-    // const diffedWithChars = compareTextWith(
-    //     oldVersion,
-    //     newVersion,
-    //     context,
-    //     diffChars
-    // );
-    // if (diffedWithChars.cost < diffedWithWords.cost) {
-    //     return diffedWithChars;
-    // }
     return diffedWithWords;
 };

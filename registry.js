@@ -2,18 +2,32 @@ import { compareArray } from './compareArray';
 import { compareText } from './compareText';
 import { createCompareObjects } from './compareObjects';
 import { createCompareMarks } from './compareMarks';
+import { compareByIdentity } from './compareByIdentity';
 import { decorateText, decorateNodeWithContent } from './decorate';
 import { resolveElementWithContent, resolveText } from './resolve';
 
-const withContent = {
+const contentWeight = (element, weight) =>
+    element.content
+        ? 2 + 0.8 * element.content.map(weight).reduce((a, b) => a + b)
+        : 2;
+
+const contentNode = {
     diff: {
-        compare: {
+        compare: createCompareObjects({
             content: compareArray,
-        },
-        weight: (element, weight) =>
-            element.content
-                ? 2 + 0.8 * element.content.map(weight).reduce((a, b) => a + b)
-                : 2,
+        }),
+        weight: contentWeight,
+    },
+    render: {
+        resolve: resolveElementWithContent,
+        decorate: decorateNodeWithContent,
+    },
+};
+
+const leafNode = {
+    diff: {
+        compare: createCompareObjects({}),
+        weight: () => 1,
     },
     render: {
         resolve: resolveElementWithContent,
@@ -22,16 +36,39 @@ const withContent = {
 };
 
 export const baseRegistry = {
-    doc: withContent,
-    paragraph: withContent,
-    bullet_list: withContent,
-    list_item: withContent,
+    doc: contentNode,
+    paragraph: contentNode,
+    blockquote: contentNode,
+    horizontal_rule: leafNode,
+    heading: {
+        diff: {
+            compare: createCompareObjects({
+                attrs: {
+                    level: compareByIdentity,
+                },
+                content: compareArray,
+            }),
+            weight: contentWeight,
+        },
+        render: {
+            resolve: resolveElementWithContent,
+            decorate: decorateNodeWithContent,
+        },
+    },
+    bullet_list: contentNode,
+    ordered_list: contentNode,
+    code_block: contentNode,
+    hard_break: leafNode,
+    list_item: contentNode,
     text: {
         diff: {
-            compare: {
-                marks: createCompareMarks(),
-                text: compareText,
-            },
+            compare: createCompareObjects(
+                {
+                    marks: createCompareMarks(),
+                    text: compareText,
+                },
+                ['marks', 'text']
+            ),
             weight: element => element.text.length,
         },
         render: {
@@ -39,20 +76,22 @@ export const baseRegistry = {
             decorate: decorateText,
         },
     },
-};
-
-export const buildRegistry = schema => {
-    const registry = {};
-    Object.entries(schema).forEach(([key, value]) => {
-        registry[key] = {
-            ...value,
-            diff: {
-                ...value.diff,
-                compare: createCompareObjects(value.diff.compare),
-            },
-        };
-    });
-    return registry;
+    none: leafNode,
+    image: {
+        diff: {
+            compare: createCompareObjects({
+                url: { default: null },
+                size: { default: 50 }, // number as percentage
+                align: { default: 'center' },
+                caption: { default: '' },
+            }),
+            weight: () => 500,
+        },
+        render: {
+            resolve: resolveElementWithContent,
+            decorate: decorateNodeWithContent,
+        },
+    },
 };
 
 export const getTypeFromRegistry = (registry, type) => {

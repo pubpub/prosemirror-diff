@@ -1,19 +1,29 @@
-export const createCompareObjects = comparableSchema => {
+export const createCompareObjects = (comparableSchema, keyHints) => {
+    const sortKeys = keyHints
+        ? keys =>
+              Array.from(keys).sort((a, b) => {
+                  return keyHints.indexOf(a) - keyHints.indexOf(b);
+              })
+        : x => x;
+
     return (oldVersion, newVersion, context) => {
-        const { replace, weight, incomparable } = context;
+        const { replace, weight, incomparable, memoizer } = context;
         let compareCost = 0;
         const compareObj = (innerSchema, innerOld, innerNew) => {
             const resObj = {};
-            for (const key of new Set([
-                ...Object.keys(innerOld),
-                ...Object.keys(innerNew),
-            ])) {
+            for (const key of sortKeys(
+                new Set([...Object.keys(innerOld), ...Object.keys(innerNew)])
+            )) {
                 const oldValue = innerOld[key];
                 const newValue = innerNew[key];
                 const schemaAtKey = innerSchema[key];
                 if (typeof schemaAtKey === 'function') {
                     // We've found a sub-key that is comparable.
-                    const compared = schemaAtKey(oldValue, newValue, context);
+                    const compared = memoizer.compare(schemaAtKey)(
+                        oldValue,
+                        newValue,
+                        context
+                    );
                     if (compared === incomparable) {
                         return incomparable;
                     }
@@ -45,7 +55,9 @@ export const createCompareObjects = comparableSchema => {
         if (compareResult === incomparable) {
             return {
                 result: replace(oldVersion, newVersion),
-                cost: weight(oldVersion) + weight(newVersion),
+                cost:
+                    memoizer.weight(weight)(oldVersion) +
+                    memoizer.weight(weight)(newVersion),
             };
         }
         return { result: compareResult, cost: compareCost };

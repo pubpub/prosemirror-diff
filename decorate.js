@@ -36,7 +36,6 @@ const removalDecoration = (position, element, serializer, schema) => {
                       Fragment.from(node)
                   );
                   wrapper.appendChild(domNode);
-                  console.log(node, wrapper);
                   return wrapper;
               };
     return Decoration.widget(position, getDomNode, {

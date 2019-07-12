@@ -1,5 +1,5 @@
 export const compareArray = (oldVersion, newVersion, context) => {
-    const { compare, add, remove, weight, incomparable } = context;
+    const { compare, add, remove, weight, incomparable, memoizer } = context;
     if (!oldVersion || !newVersion) {
         return incomparable;
     }
@@ -10,7 +10,10 @@ export const compareArray = (oldVersion, newVersion, context) => {
         const compareFirst = compare(firstRemoval, firstAddition, context);
         if (compareFirst !== incomparable) {
             const { cost: internalCost, result: internalResult } = compareFirst;
-            const { result: diagonalResult, cost: diagonalCost } = compareArray(
+            const {
+                result: diagonalResult,
+                cost: diagonalCost,
+            } = memoizer.compare(compareArray)(
                 afterRemoval,
                 afterAddition,
                 context
@@ -22,13 +25,15 @@ export const compareArray = (oldVersion, newVersion, context) => {
         }
     }
     const additionDiff =
-        firstAddition && compareArray(oldVersion, afterAddition, context);
+        firstAddition &&
+        memoizer.compare(compareArray)(oldVersion, afterAddition, context);
     const additionResult = additionDiff && {
         cost: weight(firstAddition) + additionDiff.cost,
         result: [add(firstAddition), ...additionDiff.result],
     };
     const removalDiff =
-        firstRemoval && compareArray(afterRemoval, newVersion, context);
+        firstRemoval &&
+        memoizer.compare(compareArray)(afterRemoval, newVersion, context);
     const removalResult = removalDiff && {
         cost: weight(firstRemoval) + removalDiff.cost,
         result: [remove(firstRemoval), ...removalDiff.result],
