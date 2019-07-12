@@ -19,7 +19,8 @@ const resolveArray = (
         if (element[diffObjectSymbol]) {
             if (element.remove) {
                 accumulatedRemovals.push(element.remove);
-            } else if (element.add) {
+            }
+            if (element.add) {
                 resolvedElement = element.add;
                 additionsMap.set(resolvedIndex, resolvedElement);
             }
