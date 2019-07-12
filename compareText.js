@@ -1,7 +1,12 @@
 import { diffWordsWithSpace } from 'diff';
 
 export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
-    console.time('compareText');
+    if (oldVersion === newVersion) {
+        return {
+            result: oldVersion,
+            cost: 0,
+        };
+    }
     const { add, remove } = context;
     const diffResult = diffFn(oldVersion, newVersion);
     const result = [];
@@ -18,8 +23,6 @@ export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
             result.push(subresult.value);
         }
     }
-    console.timeEnd('compareText');
-    console.log(oldVersion, newVersion);
     return { result, cost };
 };
 

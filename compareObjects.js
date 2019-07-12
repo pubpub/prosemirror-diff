@@ -8,7 +8,9 @@ export const createCompareObjects = (comparableSchema, keyHints) => {
 
     return (oldVersion, newVersion, context) => {
         const { replace, weight, incomparable, memoizer } = context;
+
         let compareCost = 0;
+
         const compareObj = (innerSchema, innerOld, innerNew) => {
             const resObj = {};
             for (const key of sortKeys(

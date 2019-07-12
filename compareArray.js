@@ -22,6 +22,9 @@ export const compareArray = (oldVersion, newVersion, context) => {
                 cost: internalCost + diagonalCost,
                 result: [internalResult, ...diagonalResult],
             };
+            if (innerCompareResult.cost === 0) {
+                return innerCompareResult;
+            }
         }
     }
     const additionDiff =
@@ -31,6 +34,11 @@ export const compareArray = (oldVersion, newVersion, context) => {
         cost: weight(firstAddition) + additionDiff.cost,
         result: [add(firstAddition), ...additionDiff.result],
     };
+
+    if (additionResult && additionResult.cost === 0) {
+        return additionResult;
+    }
+
     const removalDiff =
         firstRemoval &&
         memoizer.compare(compareArray)(afterRemoval, newVersion, context);
@@ -38,6 +46,11 @@ export const compareArray = (oldVersion, newVersion, context) => {
         cost: weight(firstRemoval) + removalDiff.cost,
         result: [remove(firstRemoval), ...removalDiff.result],
     };
+
+    if (removalResult && removalResult.cost === 0) {
+        return removalResult;
+    }
+
     return (
         [innerCompareResult, additionResult, removalResult].reduce(
             (bestCandidate, candidate) => {

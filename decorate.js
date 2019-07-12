@@ -107,7 +107,6 @@ export const decorateNodeWithContent = (node, context) => {
         const removalsHere = removalsMap && removalsMap.get(index);
         const additionHere = additionsMap && additionsMap.get(index);
         if (removalsHere && removalsHere.length > 0) {
-            console.log('adding removal', docPosition, removalsHere);
             addRemovalDecorations(removalsHere, docPosition);
         }
         if (additionHere) {
