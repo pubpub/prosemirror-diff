@@ -7,7 +7,13 @@ export const createCompareObjects = (comparableSchema, keyHints) => {
         : x => x;
 
     return (oldVersion, newVersion, context) => {
-        const { replace, weight, incomparable, memoizer } = context;
+        const {
+            replace,
+            weight,
+            incomparable,
+            memoizer,
+            budget = Infinity,
+        } = context;
 
         let compareCost = 0;
 
@@ -32,6 +38,9 @@ export const createCompareObjects = (comparableSchema, keyHints) => {
                     const { result, cost } = compared;
                     resObj[key] = result;
                     compareCost += cost;
+                    if (compareCost > budget) {
+                        return incomparable;
+                    }
                 } else if (typeof schemaAtKey === 'object') {
                     // We need to recurse farther into the comparator.
                     const compareResult = compareObj(
@@ -57,9 +66,7 @@ export const createCompareObjects = (comparableSchema, keyHints) => {
         if (compareResult === incomparable) {
             return {
                 result: replace(oldVersion, newVersion),
-                cost:
-                    memoizer.weight(weight)(oldVersion) +
-                    memoizer.weight(weight)(newVersion),
+                cost: weight(oldVersion) + weight(newVersion),
             };
         }
         return { result: compareResult, cost: compareCost };

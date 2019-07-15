@@ -1,6 +1,9 @@
 import { diffWordsWithSpace } from 'diff';
+import Diff from 'text-diff';
 
-export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
+const diff = new Diff();
+
+export const compareTextOld = (oldVersion, newVersion, context) => {
     if (oldVersion === newVersion) {
         return {
             result: oldVersion,
@@ -8,7 +11,7 @@ export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
         };
     }
     const { add, remove } = context;
-    const diffResult = diffFn(oldVersion, newVersion);
+    const diffResult = diffWordsWithSpace(oldVersion, newVersion);
     const result = [];
     let cost = 0;
     for (let i = 0; i < diffResult.length; i++) {
@@ -27,11 +30,28 @@ export const compareTextWith = (oldVersion, newVersion, context, diffFn) => {
 };
 
 export const compareText = (oldVersion, newVersion, context) => {
-    const diffedWithWords = compareTextWith(
-        oldVersion,
-        newVersion,
-        context,
-        diffWordsWithSpace
-    );
-    return diffedWithWords;
+    if (oldVersion === newVersion) {
+        return {
+            result: oldVersion,
+            cost: 0,
+        };
+    }
+    const { add, remove } = context;
+    const diffResult = diff.main(oldVersion, newVersion);
+    diff.cleanupSemantic(diffResult);
+    const result = [];
+    let cost = 0;
+    for (let i = 0; i < diffResult.length; i++) {
+        const [status, text] = diffResult[i];
+        if (status === 1) {
+            result.push(add(text));
+            cost += text.length;
+        } else if (status === -1) {
+            result.push(remove(text));
+            cost += text.length;
+        } else {
+            result.push(text);
+        }
+    }
+    return { result, cost };
 };
