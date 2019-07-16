@@ -1,10 +1,9 @@
 import { compareArray } from './compareArray';
 import { compareText } from './compareText';
 import { createCompareObjects } from './compareObjects';
-import { createCompareMarks } from './compareMarks';
 import { compareByIdentity } from './compareByIdentity';
 import { decorateText, decorateNodeWithContent } from './decorate';
-import { resolveElementWithContent, resolveText } from './resolve';
+import { resolveText, resolveElementWithContent } from './resolve';
 
 const contentWeight = (element, weight) =>
     element.content
@@ -14,7 +13,7 @@ const contentWeight = (element, weight) =>
 const contentNode = {
     diff: {
         compare: createCompareObjects({
-            content: compareArray,
+            content: compareText,
         }),
         weight: contentWeight,
     },
@@ -27,7 +26,7 @@ const contentNode = {
 const leafNode = {
     diff: {
         compare: createCompareObjects({}),
-        weight: () => 1,
+        weight: () => 100,
     },
     render: {
         resolve: resolveElementWithContent,
@@ -36,7 +35,18 @@ const leafNode = {
 };
 
 export const baseRegistry = {
-    doc: contentNode,
+    doc: {
+        diff: {
+            compare: createCompareObjects({
+                content: compareArray,
+            }),
+            weight: contentWeight,
+        },
+        render: {
+            resolve: resolveElementWithContent,
+            decorate: decorateNodeWithContent,
+        },
+    },
     paragraph: contentNode,
     blockquote: contentNode,
     horizontal_rule: leafNode,
@@ -61,16 +71,6 @@ export const baseRegistry = {
     hard_break: leafNode,
     list_item: contentNode,
     text: {
-        diff: {
-            compare: createCompareObjects(
-                {
-                    marks: createCompareMarks(),
-                    text: compareText,
-                },
-                ['marks', 'text']
-            ),
-            weight: element => element.text.length,
-        },
         render: {
             resolve: resolveText,
             decorate: decorateText,
