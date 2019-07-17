@@ -1,5 +1,5 @@
 import { compareArray } from './compareArray';
-import { compareText } from './compareText';
+import { compareInline } from './compareInline';
 import { createCompareObjects } from './compareObjects';
 import { compareByIdentity } from './compareByIdentity';
 import { decorateText, decorateNodeWithContent } from './decorate';
@@ -10,10 +10,10 @@ const contentWeight = (element, weight) =>
         ? 2 + 0.8 * element.content.map(weight).reduce((a, b) => a + b)
         : 2;
 
-const contentNode = {
+const contentNode = contentComparator => ({
     diff: {
         compare: createCompareObjects({
-            content: compareText,
+            content: contentComparator,
         }),
         weight: contentWeight,
     },
@@ -21,7 +21,7 @@ const contentNode = {
         resolve: resolveElementWithContent,
         decorate: decorateNodeWithContent,
     },
-};
+});
 
 const leafNode = {
     diff: {
@@ -47,8 +47,8 @@ export const baseRegistry = {
             decorate: decorateNodeWithContent,
         },
     },
-    paragraph: contentNode,
-    blockquote: contentNode,
+    paragraph: contentNode(compareInline),
+    blockquote: contentNode(compareInline),
     horizontal_rule: leafNode,
     heading: {
         diff: {
@@ -56,7 +56,7 @@ export const baseRegistry = {
                 attrs: {
                     level: compareByIdentity,
                 },
-                content: compareText,
+                content: compareInline,
             }),
             weight: contentWeight,
         },
@@ -65,11 +65,11 @@ export const baseRegistry = {
             decorate: decorateNodeWithContent,
         },
     },
-    bullet_list: contentNode,
-    ordered_list: contentNode,
-    code_block: contentNode,
+    bullet_list: contentNode(compareArray),
+    ordered_list: contentNode(compareArray),
+    code_block: contentNode(compareInline),
     hard_break: leafNode,
-    list_item: contentNode,
+    list_item: contentNode(compareArray),
     text: {
         diff: {
             weight: element => element.text.length,

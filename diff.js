@@ -58,8 +58,6 @@ const innerDiff = (oldVersion, newVersion, registry, memoizer) => {
 };
 
 export const diff = (oldVersion, newVersion, registry, memoizer) => {
-    console.time('diff');
     const { result } = innerDiff(oldVersion, newVersion, registry, memoizer);
-    console.timeEnd('diff');
     return result;
 };

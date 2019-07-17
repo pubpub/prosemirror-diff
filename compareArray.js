@@ -63,7 +63,6 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
     const bestStateMap = createBestStateMap();
     const minimumCostMap = createStateMap();
     const heap = new Heap((a, b) => a.minimumCost - b.minimumCost);
-    let popCount = 0;
 
     const makeState = (a, r, cost, result, parent) => {
         return {
@@ -164,129 +163,20 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
 
     heap.push(makeState(-1, -1, 0, []));
 
-    // while (!heap.empty()) {
-    //     const state = heap.pop();
-    //     if (state.r === rExtent && state.a === aExtent) {
-    //         return state;
-    //     }
-    //     getSuccessorStates(state).forEach(state => heap.push(state));
-    // }
     while (!heap.empty()) {
         const firstState = heap.pop();
-        popCount++;
         const equallyMeritousStates = [firstState];
         while (
             !heap.empty() &&
             heap.peek().minimumCost === firstState.minimumCost
         ) {
-            popCount++;
             equallyMeritousStates.push(heap.pop());
         }
         for (const state of equallyMeritousStates) {
             if (state.r === rExtent && state.a === aExtent) {
-                console.log(
-                    'popCount',
-                    oldVersion.length,
-                    newVersion.length,
-                    popCount
-                );
                 return state;
             }
             getSuccessorStates(state).forEach(state => heap.push(state));
         }
     }
 };
-
-// export const compareArrayOld = (oldVersion, newVersion, context) => {
-//     const { compare, add, remove, weight, incomparable, memoizer } = context;
-//     if (!oldVersion || !newVersion) {
-//         return incomparable;
-//     }
-//     const [firstRemoval, ...afterRemoval] = oldVersion;
-//     const [firstAddition, ...afterAddition] = newVersion;
-
-//     let compareResult;
-//     if (firstRemoval && firstAddition) {
-//         const compareInternal = compare(firstRemoval, firstAddition, context);
-//         if (compareInternal !== incomparable) {
-//             const {
-//                 cost: internalCost,
-//                 result: internalResult,
-//             } = compareInternal;
-//             const {
-//                 result: externalResult,
-//                 cost: externalCost,
-//             } = memoizer.compare(compareArray)(
-//                 afterRemoval,
-//                 afterAddition,
-//                 context
-//             );
-//             compareResult = {
-//                 cost: internalCost + externalCost,
-//                 result: [internalResult, ...externalResult],
-//             };
-//             if (compareResult.cost === 0) {
-//                 return compareResult;
-//             }
-//         }
-//     }
-
-//     let additionResult;
-//     if (firstAddition) {
-//         const weightToAdd = weight(firstAddition);
-//         const notWorseThanCompare =
-//             !compareResult || compareResult.cost > weightToAdd;
-//         if (notWorseThanCompare) {
-//             const additionDiff = memoizer.compare(compareArray)(
-//                 oldVersion,
-//                 afterAddition,
-//                 context
-//             );
-//             additionResult = additionDiff && {
-//                 cost: weightToAdd + additionDiff.cost,
-//                 result: [add(firstAddition), ...additionDiff.result],
-//             };
-//             if (additionResult && additionResult.cost === 0) {
-//                 return additionResult;
-//             }
-//         }
-//     }
-
-//     let removalResult;
-//     if (firstRemoval) {
-//         const weightToRemove = weight(firstRemoval);
-//         const notWorseThanAdd =
-//             !additionResult || additionResult.cost > weightToRemove;
-//         const notWorseThanCompare =
-//             !compareResult || compareResult.cost > weightToRemove;
-//         if (notWorseThanCompare && notWorseThanAdd) {
-//             const removalDiff = memoizer.compare(compareArray)(
-//                 afterRemoval,
-//                 newVersion,
-//                 context
-//             );
-//             removalResult = removalDiff && {
-//                 cost: weightToRemove + removalDiff.cost,
-//                 result: [remove(firstRemoval), ...removalDiff.result],
-//             };
-//             if (removalResult && removalResult.cost === 0) {
-//                 return removalResult;
-//             }
-//         }
-//     }
-
-//     return (
-//         [compareResult, additionResult, removalResult].reduce(
-//             (bestCandidate, candidate) => {
-//                 if (
-//                     !bestCandidate ||
-//                     (candidate && candidate.cost < bestCandidate.cost)
-//                 ) {
-//                     return candidate;
-//                 }
-//                 return bestCandidate;
-//             },
-//             null
-//         ) || { cost: 0, result: [] }
-//     );
-// };

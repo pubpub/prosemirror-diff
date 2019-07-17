@@ -37,7 +37,8 @@ const tokenizeElement = (element, marksTable, atomicTable, separator) => {
             .map((text, i, arr) => [
                 symbol,
                 text + (i === arr.length - 1 ? '' : separator),
-            ]);
+            ])
+            .filter(entry => entry[1] !== '');
     }
     return [atomicTable.getSymbolForElement(element)];
 };
@@ -60,7 +61,7 @@ const compareDiffElement = (left, right) => {
 const createElementsFromDiffResult = (diffResult, marksTable, atomicTable) => {
     const result = [];
     let pendingText = '';
-    let pendingMarks = null;
+    let pendingMarkSymbol = null;
     let cost = 0;
 
     const flushPending = () => {
@@ -68,12 +69,12 @@ const createElementsFromDiffResult = (diffResult, marksTable, atomicTable) => {
             result.push({
                 type: 'text',
                 text: pendingText,
-                marks: pendingMarks,
+                marks: marksTable.getElementForSymbol(pendingMarkSymbol),
             });
             cost += pendingText.length;
         }
         pendingText = '';
-        pendingMarks = null;
+        pendingMarkSymbol = null;
     };
 
     for (let i = 0; i < diffResult.length; i++) {
@@ -87,12 +88,13 @@ const createElementsFromDiffResult = (diffResult, marksTable, atomicTable) => {
                 throw new Error('Missing symbol for element');
             }
         } else {
-            if (pendingMarks === null) {
-                pendingMarks = marksTable.getElementForSymbol(diffResult[0][0]);
-            }
-            const subtext = diffResult[i][1];
-            if (subtext) {
-                pendingText += subtext;
+            const [markSymbol, text] = diffResult[i];
+            if (text.length > 0) {
+                if (markSymbol !== pendingMarkSymbol) {
+                    flushPending();
+                }
+                pendingMarkSymbol = markSymbol;
+                pendingText += text;
             }
         }
     }
@@ -100,7 +102,7 @@ const createElementsFromDiffResult = (diffResult, marksTable, atomicTable) => {
     return { result, cost };
 };
 
-export const compareText = (oldVersion, newVersion, context) => {
+export const compareInline = (oldVersion, newVersion, context) => {
     const { add, remove } = context;
     const separator = ' ';
     const marksTable = makeSymbolTable();
@@ -144,89 +146,3 @@ export const compareText = (oldVersion, newVersion, context) => {
     }
     return { result, cost };
 };
-
-// const shouldMoveDownInDiff = (k, d, v) =>
-//     k === -d || (k !== d && getVEntry(k - 1, v) < getVEntry(k + 1, v));
-
-// const getShortestEdit = (rSeq, aSeq) => {
-//     const max = rSeq.length + aSeq.length;
-//     const trace = [];
-//     const v = new Array(2 * max + 1);
-//     setVEntry(1, v, 0);
-//     for (let d = 0; d <= max; d++) {
-//         trace.push([...v]);
-//         for (let k = -d; k <= d; k += 2) {
-//             let r = shouldMoveDownInDiff(k, d, v)
-//                 ? getVEntry(k + 1, v)
-//                 : getVEntry(k - 1, v) + 1;
-//             let a = r - k;
-//             while (r < rSeq.length && a < aSeq.length && aSeq[r] === rSeq[a]) {
-//                 r++;
-//                 a++;
-//             }
-//             setVEntry(k, v, r);
-//             if (a >= aSeq.length && r >= rSeq.length) {
-//                 return trace;
-//             }
-//         }
-//     }
-// };
-
-// const backtrack = (rSeq, aSeq, shortestEdit, context) => {
-//     let r = rSeq.length;
-//     let a = aSeq.length;
-
-//     const diff = [];
-//     let mode = 0;
-//     let pending = [];
-
-//     const consume = (newMode, start, end, seq) => {
-//         console.log('consume', newMode, seq.slice(start, end));
-//         if (mode !== newMode) {
-//             flushPending();
-//             mode = newMode;
-//         }
-//         pending.unshift(seq.slice(start, end));
-//     };
-
-//     const flushPending = () => {
-//         if (pending.length > 0) {
-//             diff.unshift([mode, pending.reduce((a, b) => a.concat(b), [])]);
-//             pending = [];
-//         }
-//     };
-
-//     for (let d = shortestEdit.length - 1; d >= 0; d--) {
-//         const v = shortestEdit[d];
-//         const k = r - a;
-//         const kPrev = shouldMoveDownInDiff(k, d, v) ? k + 1 : k - 1;
-//         const rPrev = getVEntry(kPrev, v);
-//         const aPrev = rPrev - kPrev;
-//         while (r > rPrev && a > aPrev) {
-//             consume(0, a - 1, a, aSeq);
-//             r--;
-//             a--;
-//         }
-//         if (d > 0) {
-//             if (r !== rPrev) {
-//                 consume(-1, rPrev, r, rSeq);
-//             }
-//             if (a !== aPrev) {
-//                 consume(1, aPrev, a, aSeq);
-//             }
-//         }
-//         r = rPrev;
-//         a = aPrev;
-//     }
-
-//     flushPending();
-//     return diff;
-// };
-
-// const getK = (k, v) => (k >= 0 ? k : v.length + k);
-
-// const getVEntry = (k, v) => v[getK(k, v)];
-
-// const setVEntry = (k, v, value) => {
-//     v[getK(k, v)] = value;
-// };
