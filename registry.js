@@ -56,7 +56,7 @@ export const baseRegistry = {
                 attrs: {
                     level: compareByIdentity,
                 },
-                content: compareArray,
+                content: compareText,
             }),
             weight: contentWeight,
         },
@@ -100,7 +100,6 @@ export const baseRegistry = {
 export const getTypeFromRegistry = (registry, type) => {
     const resolvedType = typeof type === 'object' ? type.name : type;
     if (!registry[resolvedType] || typeof registry[resolvedType] !== 'object') {
-        debugger;
         throw new Error(
             `prosemirror-compare registry does not have an entry for ${resolvedType}`
         );

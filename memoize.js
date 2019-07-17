@@ -1,4 +1,4 @@
-const updateAndGetStringify = (object, stringifyMap) => {
+export const passThroughStringifyMap = (object, stringifyMap) => {
     if (stringifyMap.get(object)) {
         return stringifyMap.get(object);
     } else {
@@ -11,30 +11,34 @@ const updateAndGetStringify = (object, stringifyMap) => {
 export const memoizeCompareFn = (
     compare,
     { compareMap, stringifyMap, recordHit, recordMiss }
-) => (oldVersion, newVersion, ...restArgs) => {
-    const oldString = updateAndGetStringify(oldVersion, stringifyMap);
-    const newString = updateAndGetStringify(newVersion, stringifyMap);
-    let innerMap = compareMap.get(oldString);
-    if (!innerMap) {
-        innerMap = new Map();
-        compareMap.set(oldString, innerMap);
+) => {
+    if (typeof compare !== 'function') {
+        throw new Error('Invalid input to memoizeCompareFn');
     }
-    const maybeResult = innerMap.get(newString);
-    if (maybeResult) {
-        recordHit();
-        return maybeResult;
-    }
-    recordMiss();
-    const result = compare(oldVersion, newVersion, ...restArgs);
-    innerMap.set(newString, result);
-    return result;
+    return (oldVersion, newVersion, ...restArgs) => {
+        const oldString = passThroughStringifyMap(oldVersion, stringifyMap);
+        const newString = passThroughStringifyMap(newVersion, stringifyMap);
+        let innerMap = compareMap.get(oldString);
+        if (!innerMap) {
+            innerMap = new Map();
+            compareMap.set(oldString, innerMap);
+        }
+        const maybeResult = innerMap.get(newString);
+        if (maybeResult) {
+            recordHit();
+            return maybeResult;
+        }
+        recordMiss();
+        const result = compare(oldVersion, newVersion, ...restArgs);
+        innerMap.set(newString, result);
+        return result;
+    };
 };
-
 export const memoizeWeightFn = (
     weight,
     { weightMap, stringifyMap, recordHit, recordMiss }
 ) => (element, ...restArgs) => {
-    const elementString = updateAndGetStringify(element, stringifyMap);
+    const elementString = passThroughStringifyMap(element, stringifyMap);
     const mapValue = weightMap.get(elementString);
     if (mapValue) {
         recordHit();
