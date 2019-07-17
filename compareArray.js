@@ -53,7 +53,7 @@ const createBestStateMap = () => {
     return { markState, isBetterState, getValueAtPosition };
 };
 
-export const compareArrayNo = (oldVersion = [], newVersion = [], context) => {
+export const compareArray = (oldVersion = [], newVersion = [], context) => {
     const { compare, add, remove, weight, incomparable, memoizer } = context;
     const memoWeight = memoizer.weight(weight);
     const rExtent = oldVersion.length - 1;
@@ -194,7 +194,7 @@ export const compareArrayNo = (oldVersion = [], newVersion = [], context) => {
     }
 };
 
-export const compareArray = (oldVersion, newVersion, context) => {
+export const compareArrayOld = (oldVersion, newVersion, context) => {
     const { compare, add, remove, weight, incomparable, memoizer } = context;
     if (!oldVersion || !newVersion) {
         return incomparable;

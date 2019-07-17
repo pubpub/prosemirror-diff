@@ -71,6 +71,9 @@ export const baseRegistry = {
     hard_break: leafNode,
     list_item: contentNode,
     text: {
+        diff: {
+            weight: element => element.text.length,
+        },
         render: {
             resolve: resolveText,
             decorate: decorateText,
@@ -97,6 +100,7 @@ export const baseRegistry = {
 export const getTypeFromRegistry = (registry, type) => {
     const resolvedType = typeof type === 'object' ? type.name : type;
     if (!registry[resolvedType] || typeof registry[resolvedType] !== 'object') {
+        debugger;
         throw new Error(
             `prosemirror-compare registry does not have an entry for ${resolvedType}`
         );
