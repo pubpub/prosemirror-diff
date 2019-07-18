@@ -32,23 +32,35 @@ const makeSymbolTable = () => {
 const tokenizeElement = (element, marksTable, atomicTable, separator) => {
     const symbol = marksTable.getSymbolForElement(element.marks);
     if (element.type === 'text') {
-        return element.text
-            .split(separator)
-            .map((text, i, arr) => [
-                symbol,
-                text + (i === arr.length - 1 ? '' : separator),
-            ])
-            .filter(entry => entry[1] !== '');
+        const textParts = element.text.split(separator);
+        const res = [];
+        for (let i = 0; i < textParts.length; i++) {
+            const textWithSeparator =
+                textParts[i] + (i === textParts.length - 1 ? '' : separator);
+            if (textWithSeparator.length > 0) {
+                res.push([symbol, textWithSeparator]);
+            }
+        }
+        return res;
     }
     return [atomicTable.getSymbolForElement(element)];
 };
 
-const tokenizeTextArray = (array, marksTable, atomicTable, separator) =>
-    array
-        .map(entry =>
-            tokenizeElement(entry, marksTable, atomicTable, separator)
-        )
-        .reduce((a, b) => [...a, ...b], []);
+const tokenizeTextArray = (array, marksTable, atomicTable, separator) => {
+    const res = [];
+    for (let i = 0; i < array.length; i++) {
+        const tokenizeResult = tokenizeElement(
+            array[i],
+            marksTable,
+            atomicTable,
+            separator
+        );
+        for (let j = 0; j < tokenizeResult.length; j++) {
+            res.push(tokenizeResult[j]);
+        }
+    }
+    return res;
+};
 
 const compareDiffElement = (left, right) => {
     if (left === right) {
