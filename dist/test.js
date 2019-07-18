@@ -1,0 +1,18 @@
+"use strict";
+exports.__esModule = true;
+var fs_1 = require("fs");
+var diff_1 = require("./diff");
+var registry_1 = require("./registry");
+var schemas_1 = require("./schemas");
+var resolve_1 = require("./resolve");
+var decorate_1 = require("./decorate");
+var registry = registry_1.buildRegistry(registry_1.baseRegistry);
+var oldVersion = JSON.parse(fs_1["default"].readFileSync('./test/diff-old.json'));
+var newVersion = JSON.parse(fs_1["default"].readFileSync('./test/diff-new.json'));
+var diffed = diff_1.diff(oldVersion, newVersion, registry);
+debugger;
+var editorSchema = schemas_1.buildSchema();
+var _a = resolve_1.resolve(diffed, registry), doc = _a.doc, additions = _a.additions, removals = _a.removals;
+var docNode = editorSchema.nodeFromJSON(doc);
+var decorated = decorate_1.decorate(docNode, editorSchema, additions, removals, registry);
+console.log(decorated);

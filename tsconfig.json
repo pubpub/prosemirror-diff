@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "outDir": "dist",
+        "lib": ["es6", "dom"]
+    },
+    "include": ["./**/*.ts"],
+    "exclude": ["node_modules"]
+}

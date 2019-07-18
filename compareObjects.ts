@@ -1,7 +1,7 @@
-export const createCompareObjects = (comparableSchema, keyHints) => {
+export const createCompareObjects = (comparableSchema, keyHints?: [string]) => {
     const sortKeys = keyHints
         ? keys =>
-              Array.from(keys).sort((a, b) => {
+              Array.from(keys).sort((a: string, b: string) => {
                   return keyHints.indexOf(a) - keyHints.indexOf(b);
               })
         : x => x;

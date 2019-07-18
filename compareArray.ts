@@ -64,17 +64,6 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
     const minimumCostMap = createStateMap();
     const heap = new Heap((a, b) => a.minimumCost - b.minimumCost);
 
-    const makeState = (a, r, cost, result, parent) => {
-        return {
-            parent,
-            a,
-            r,
-            cost,
-            result,
-            minimumCost: cost + getMinimumCostToGoal(a, r),
-        };
-    };
-
     const getMinimumCostToGoal = (a, r) => {
         const maybeValue = minimumCostMap.getValueAtPosition(a, r);
         if (maybeValue || maybeValue === 0) {
@@ -88,16 +77,27 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
         );
         const remainingAdditionsSorted = aWeights
             .slice(a + 1, aExtent + 1)
-            .sort((a, b) => a - b)
+            .sort((a: number, b: number) => a - b)
             .slice(0, remainingAdditionTraversal - remainingDiagonals);
         const remainingRemovalsSorted = rWeights
             .slice(r + 1, rExtent + 1)
-            .sort((a, b) => a - b)
+            .sort((a: number, b: number) => a - b)
             .slice(0, remainingRemovalTraversal - remainingDiagonals);
         const value =
             sum(remainingAdditionsSorted) + sum(remainingRemovalsSorted);
         minimumCostMap.setValueAtPosition(a, r, value);
         return value;
+    };
+
+    const makeState = (a, r, cost, result, parent = null) => {
+        return {
+            parent,
+            a,
+            r,
+            cost,
+            result,
+            minimumCost: cost + getMinimumCostToGoal(a, r),
+        };
     };
 
     const getSuccessorStates = currentState => {
