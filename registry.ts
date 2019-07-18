@@ -4,6 +4,7 @@ import { createCompareObjects } from './compareObjects';
 import { compareByIdentity } from './compareByIdentity';
 import { decorateText, decorateNodeWithContent } from './decorate';
 import { resolveText, resolveElementWithContent } from './resolve';
+import { Registry } from './types';
 
 const contentWeight = (element, weight) =>
     element.content
@@ -97,12 +98,11 @@ export const baseRegistry = {
     },
 };
 
-export const getTypeFromRegistry = (registry, type) => {
-    const resolvedType = typeof type === 'object' ? type.name : type;
-    if (!registry[resolvedType] || typeof registry[resolvedType] !== 'object') {
+export const getTypeFromRegistry = (registry: Registry, type: string) => {
+    if (!registry[type] || typeof registry[type] !== 'object') {
         throw new Error(
-            `prosemirror-compare registry does not have an entry for ${resolvedType}`
+            `prosemirror-compare registry does not have an entry for ${type}`
         );
     }
-    return registry[resolvedType];
+    return registry[type];
 };

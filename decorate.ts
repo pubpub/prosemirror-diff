@@ -2,22 +2,35 @@ import { Decoration, DecorationSet } from 'prosemirror-view';
 import { DOMSerializer, Fragment } from 'prosemirror-model';
 
 import { getTypeFromRegistry } from './registry';
+import {
+    DecoratorFn,
+    ProsemirrorNode,
+    ProsemirrorDomSerializer,
+    ProsemirrorSchema,
+    ProsemirrorDoc,
+    ResolveAdditions,
+    ResolveRemovals,
+    Registry,
+} from './types';
 
-const additionDecoration = (from, to, isBlock, addition) => {
+const additionDecoration = (from: number, to: number, isBlock: boolean) => {
     if (isBlock) {
         return Decoration.node(from, to, {
             class: 'prosemirror-diff-add',
-            addition,
         });
     } else {
         return Decoration.inline(from, to, {
             class: 'prosemirror-diff-add',
-            addition,
         });
     }
 };
 
-const removalDecoration = (position, element, serializer, schema) => {
+const removalDecoration = (
+    position: number,
+    element: string | ProsemirrorNode,
+    serializer: ProsemirrorDomSerializer,
+    schema: ProsemirrorSchema
+) => {
     let getDomNode =
         typeof element === 'string'
             ? () => {
@@ -44,9 +57,9 @@ const removalDecoration = (position, element, serializer, schema) => {
     });
 };
 
-export const decorateText = (textElement, context) => {
+export const decorateText: DecoratorFn = (textElement, context) => {
     const { schema, serializer, offset, additions, removals } = context;
-    const removalsMap = removals && removals.text.map;
+    const removalsMap = removals && removals.text && removals.text.map;
     const additionsMap = additions && additions.text.map;
     const decorations = [];
     if (removals) {
@@ -71,8 +84,7 @@ export const decorateText = (textElement, context) => {
                 additionDecoration(
                     offset + index - 1,
                     offset + index + additionHere.length - 1,
-                    false,
-                    additionHere
+                    false
                 )
             );
         }
@@ -80,7 +92,7 @@ export const decorateText = (textElement, context) => {
     return decorations;
 };
 
-export const decorateNodeWithContent = (node, context) => {
+export const decorateNodeWithContent: DecoratorFn = (node, context) => {
     const {
         schema,
         serializer,
@@ -114,8 +126,7 @@ export const decorateNodeWithContent = (node, context) => {
                 additionDecoration(
                     docPosition + 0,
                     docPosition + child.nodeSize + 0,
-                    child.isBlock,
-                    child
+                    child.isBlock
                 )
             );
         }
@@ -138,7 +149,13 @@ export const decorateNodeWithContent = (node, context) => {
     return decorations;
 };
 
-export const decorate = (doc, schema, additions, removals, registry) => {
+export const decorate = (
+    doc: ProsemirrorDoc,
+    schema: ProsemirrorSchema,
+    additions: ResolveAdditions,
+    removals: ResolveRemovals,
+    registry: Registry
+) => {
     const serializer = DOMSerializer.fromSchema(schema);
 
     const decorate = (node, offset, additions, removals) => {

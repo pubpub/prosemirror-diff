@@ -1,40 +1,59 @@
-import { diffObjectSymbol } from './diff';
+import { isDiffObject } from './symbols';
 import { getTypeFromRegistry } from './registry';
+import {
+    Addition,
+    ComparableEntry,
+    ProsemirrorContentNode,
+    Removal,
+    ResolverContext,
+    Resolvable,
+    UnresolvedProsemirrorTextNode,
+    ResolveResult,
+    ProsemirrorDoc,
+    ProsemirrorTextNode,
+    ResolveAdditions,
+    ResolveRemovals,
+    Registry,
+} from './types';
 
-const resolveArray = (
-    array,
-    context,
+const resolveArray = <T extends Resolvable>(
+    array: ComparableEntry<Resolvable>[],
+    context: ResolverContext,
     getResolvedIndex = resolved => resolved.length
 ) => {
     const { resolve } = context;
-    const additionsMap = new Map();
-    const childAdditionsMap = new Map();
-    const removalsMap = new Map();
-    const childRemovalsMap = new Map();
-    let accumulatedRemovals = [];
+    const childAdditionsMap: Map<number, ResolveAdditions> = new Map();
+    const childRemovalsMap: Map<number, ResolveRemovals> = new Map();
+    const additionsMap: Map<number, T> = new Map();
+    const removalsMap: Map<'end' | number, T[]> = new Map();
+    let accumulatedRemovals: T[] = [];
     const resolvedElements = [];
     for (let element of array) {
         const resolvedIndex = getResolvedIndex(resolvedElements);
         let resolvedElement = null;
-        if (element[diffObjectSymbol]) {
-            if (element.remove) {
-                accumulatedRemovals.push(element.remove);
+        if (element[isDiffObject]) {
+            if ((element as Removal<T>).remove) {
+                accumulatedRemovals.push((element as Removal<T>).remove);
             }
-            if (element.add) {
-                resolvedElement = element.add;
+            if ((element as Addition<T>).add) {
+                resolvedElement = (element as Addition<T>).add;
                 additionsMap.set(resolvedIndex, resolvedElement);
             }
         } else {
-            const resolveResult = resolve(element);
-            resolvedElement =
-                typeof resolveResult === 'string'
-                    ? resolveResult
-                    : resolveResult.element;
-            if (resolveResult.removals) {
-                childRemovalsMap.set(resolvedIndex, resolveResult.removals);
-            }
-            if (resolveResult.additions) {
-                childAdditionsMap.set(resolvedIndex, resolveResult.additions);
+            if (typeof element === 'string') {
+                resolvedElement = element;
+            } else {
+                const resolveResult = resolve(element);
+                resolvedElement = resolveResult.element;
+                if (resolveResult.removals) {
+                    childRemovalsMap.set(resolvedIndex, resolveResult.removals);
+                }
+                if (resolveResult.additions) {
+                    childAdditionsMap.set(
+                        resolvedIndex,
+                        resolveResult.additions
+                    );
+                }
             }
         }
         if (resolvedElement) {
@@ -59,15 +78,18 @@ const resolveArray = (
     };
 };
 
-export const resolveText = (textElement, context) => {
-    const { additions, removals, resolvedElements } = resolveArray(
-        textElement.text,
+export const resolveText = (
+    textNode: UnresolvedProsemirrorTextNode,
+    context: ResolverContext
+): ResolveResult<ProsemirrorTextNode> => {
+    const { additions, removals, resolvedElements } = resolveArray<string>(
+        textNode.text,
         context,
         elements => elements.map(x => x.length).reduce((a, b) => a + b, 0)
     );
     return {
         element: {
-            ...textElement,
+            ...textNode,
             text: resolvedElements.join(''),
         },
         additions: {
@@ -79,11 +101,13 @@ export const resolveText = (textElement, context) => {
     };
 };
 
-export const resolveElementWithContent = (element, context) => {
-    const { additions, removals, resolvedElements } = resolveArray(
-        element.content || [],
-        context
-    );
+export const resolveElementWithContent = (
+    element: ProsemirrorContentNode,
+    context: ResolverContext
+): ResolveResult<ProsemirrorContentNode> => {
+    const { additions, removals, resolvedElements } = resolveArray<
+        ProsemirrorContentNode
+    >(element.content || [], context);
     return {
         element: {
             ...element,
@@ -99,11 +123,8 @@ export const resolveElementWithContent = (element, context) => {
     };
 };
 
-export const resolve = (diffResult, registry) => {
+export const resolve = (diffResult: ProsemirrorDoc, registry: Registry) => {
     const resolve = element => {
-        if (typeof element === 'string') {
-            return element;
-        }
         return getTypeFromRegistry(registry, element.type).render.resolve(
             element,
             { resolve }
@@ -112,7 +133,7 @@ export const resolve = (diffResult, registry) => {
 
     const result = resolve(diffResult);
     return {
-        doc: result.element,
+        doc: result.element as ProsemirrorDoc,
         additions: result.additions,
         removals: result.removals,
     };

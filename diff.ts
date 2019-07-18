@@ -1,36 +1,47 @@
 import { getTypeFromRegistry } from './registry';
+import { isDiffObject, incomparable } from './symbols';
+import {
+    Add,
+    Remove,
+    Replace,
+    ProsemirrorDoc,
+    Memoizer,
+    Registry,
+    CompareResult,
+} from './types';
 
-export const diffObjectSymbol = Symbol.for('isDiffObject');
-const incomparable = Symbol.for('incomparable');
-
-const add = item => {
+const add: Add = item => {
     return {
-        [diffObjectSymbol]: true,
+        [isDiffObject]: true,
         add: item,
     };
 };
 
-const remove = item => {
+const remove: Remove = item => {
     return {
-        [diffObjectSymbol]: true,
+        [isDiffObject]: true,
         remove: item,
     };
 };
 
-const replace = (removed, added) => {
+const replace: Replace = (removed, added) => {
     return {
-        [diffObjectSymbol]: true,
+        [isDiffObject]: true,
         ...remove(removed),
         ...add(added),
     };
 };
 
-const innerDiff = (oldVersion, newVersion, registry, memoizer) => {
+const innerDiff = (
+    oldVersion: ProsemirrorDoc,
+    newVersion: ProsemirrorDoc,
+    registry: Registry,
+    memoizer: Memoizer
+) => {
     const compare = (ov, nv, context) => {
         if (ov.type !== nv.type) {
             return incomparable;
         }
-
         return memoizer.compare(
             getTypeFromRegistry(registry, ov.type).diff.compare
         )(ov, nv, context);
@@ -52,12 +63,16 @@ const innerDiff = (oldVersion, newVersion, registry, memoizer) => {
         replace,
         compare,
         weight,
-        incomparable,
         memoizer,
     });
 };
 
 export const diff = (oldVersion, newVersion, registry, memoizer) => {
-    const { result } = innerDiff(oldVersion, newVersion, registry, memoizer);
+    const { result } = innerDiff(
+        oldVersion,
+        newVersion,
+        registry,
+        memoizer
+    ) as CompareResult<ProsemirrorDoc>;
     return result;
 };

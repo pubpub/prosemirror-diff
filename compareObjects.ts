@@ -1,4 +1,10 @@
-export const createCompareObjects = (comparableSchema, keyHints?: [string]) => {
+import { CompareContext, CompareResult, CompareFn } from './types';
+import { incomparable } from './symbols';
+
+export const createCompareObjects = (
+    comparableSchema: {},
+    keyHints?: [string]
+): CompareFn<{}, {}> => {
     const sortKeys = keyHints
         ? keys =>
               Array.from(keys).sort((a: string, b: string) => {
@@ -6,18 +12,13 @@ export const createCompareObjects = (comparableSchema, keyHints?: [string]) => {
               })
         : x => x;
 
-    return (oldVersion, newVersion, context) => {
-        const {
-            replace,
-            weight,
-            incomparable,
-            memoizer,
-            budget = Infinity,
-        } = context;
+    return (oldVersion: {}, newVersion: {}, context: CompareContext) => {
+        const { replace, weight, memoizer, budget = Infinity } = context;
 
+        incomparable;
         let compareCost = 0;
 
-        const compareObj = (innerSchema, innerOld, innerNew) => {
+        const compareObj = (innerSchema: {}, innerOld: {}, innerNew: {}) => {
             const resObj = {};
             for (const key of sortKeys(
                 new Set([...Object.keys(innerOld), ...Object.keys(innerNew)])
@@ -34,12 +35,13 @@ export const createCompareObjects = (comparableSchema, keyHints?: [string]) => {
                     );
                     if (compared === incomparable) {
                         return incomparable;
-                    }
-                    const { result, cost } = compared;
-                    resObj[key] = result;
-                    compareCost += cost;
-                    if (compareCost > budget) {
-                        return incomparable;
+                    } else {
+                        const { result, cost } = compared as CompareResult<any>;
+                        resObj[key] = result;
+                        compareCost += cost;
+                        if (compareCost > budget) {
+                            return incomparable;
+                        }
                     }
                 } else if (typeof schemaAtKey === 'object') {
                     // We need to recurse farther into the comparator.

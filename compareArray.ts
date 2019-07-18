@@ -1,5 +1,17 @@
 import Heap from 'heap';
 
+import { incomparable } from './symbols';
+import { CompareContext } from './types';
+
+interface State<T> {
+    a: number;
+    r: number;
+    cost: number;
+    minimumCost: number;
+    parent?: State<T>;
+    result: T[];
+}
+
 const sum = arr => {
     let res = 0;
     for (let i = 0; i < arr.length; i++) {
@@ -8,10 +20,10 @@ const sum = arr => {
     return res;
 };
 
-const createStateMap = () => {
-    const outerMap = new Map();
+const createStateMap = <V>() => {
+    const outerMap: Map<number, Map<number, V>> = new Map();
 
-    const ensuredInnerMapAtKey = k => {
+    const ensuredInnerMapAtKey = (k: number) => {
         const maybeExists = outerMap.get(k);
         if (maybeExists) {
             return maybeExists;
@@ -21,26 +33,28 @@ const createStateMap = () => {
         return innerMap;
     };
 
-    const getValueAtPosition = (a, r) => {
+    const getValueAtPosition = (a: number, r: number) => {
         return ensuredInnerMapAtKey(a).get(r);
     };
 
-    const setValueAtPosition = (a, r, value) => {
+    const setValueAtPosition = (a: number, r: number, value: V) => {
         ensuredInnerMapAtKey(a).set(r, value);
     };
 
     return { getValueAtPosition, setValueAtPosition };
 };
 
-const createBestStateMap = () => {
-    const { getValueAtPosition, setValueAtPosition } = createStateMap();
+const createBestStateMap = <T>() => {
+    const { getValueAtPosition, setValueAtPosition } = createStateMap<
+        State<T>
+    >();
 
-    const markState = state => {
+    const markState = (state: State<T>) => {
         const { a, r } = state;
         setValueAtPosition(a, r, state);
     };
 
-    const isBetterState = state => {
+    const isBetterState = (state: State<T>) => {
         const { minimumCost, a, r, result } = state;
         const currentValue = getValueAtPosition(a, r);
         return (
@@ -53,18 +67,21 @@ const createBestStateMap = () => {
     return { markState, isBetterState, getValueAtPosition };
 };
 
-export const compareArray = (oldVersion = [], newVersion = [], context) => {
-    const { compare, add, remove, weight, incomparable, memoizer } = context;
-    const memoWeight = memoizer.weight(weight);
+export const compareArray = <T>(
+    oldVersion: T[] = [],
+    newVersion: T[] = [],
+    context: CompareContext
+) => {
+    const { compare, add, remove, weight } = context;
     const rExtent = oldVersion.length - 1;
     const aExtent = newVersion.length - 1;
-    const rWeights = oldVersion.map(memoWeight);
-    const aWeights = newVersion.map(memoWeight);
+    const rWeights = oldVersion.map(weight);
+    const aWeights = newVersion.map(weight);
     const bestStateMap = createBestStateMap();
     const minimumCostMap = createStateMap();
     const heap = new Heap((a, b) => a.minimumCost - b.minimumCost);
 
-    const getMinimumCostToGoal = (a, r) => {
+    const getMinimumCostToGoal = (a: number, r: number) => {
         const maybeValue = minimumCostMap.getValueAtPosition(a, r);
         if (maybeValue || maybeValue === 0) {
             // return maybeValue;
@@ -89,7 +106,7 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
         return value;
     };
 
-    const makeState = (a, r, cost, result, parent = null) => {
+    const makeState = (a, r, cost, result, parent = null): State<T> => {
         return {
             parent,
             a,
@@ -100,7 +117,7 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
         };
     };
 
-    const getSuccessorStates = currentState => {
+    const getSuccessorStates = (currentState: State<T>): State<T>[] => {
         const { r, a, cost, result } = currentState;
         const nextStates = [];
         const hasAnotherRemoval = r < rExtent;
@@ -165,7 +182,7 @@ export const compareArray = (oldVersion = [], newVersion = [], context) => {
 
     while (!heap.empty()) {
         const firstState = heap.pop();
-        const equallyMeritousStates = [firstState];
+        const equallyMeritousStates: State<T>[] = [firstState];
         while (
             !heap.empty() &&
             heap.peek().minimumCost === firstState.minimumCost

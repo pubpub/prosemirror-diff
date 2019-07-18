@@ -3,11 +3,15 @@ module.exports = {
         "browser": true,
         "es6": true
     },
-    "plugins": ["prettier"],
     "extends": [
         "eslint:recommended",
-        "prettier",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "prettier/@typescript-eslint",
+        "plugin:prettier/recommended",
+    ],
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -22,7 +26,8 @@ module.exports = {
     "rules": {
         "prettier/prettier": "error",
         "@typescript-eslint/camelcase": 0,
+        "@typescript-eslint/no-explicit-any": 0,
         "@typescript-eslint/explicit-function-return-type": 0,
         "@typescript-eslint/indent": 0,
-    }
+    },
 };
