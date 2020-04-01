@@ -13,7 +13,7 @@ import {
     ProsemirrorTextNode,
     ResolveAdditions,
     ResolveRemovals,
-    Registry,
+    Registry
 } from './types';
 
 const resolveArray = <T extends Resolvable>(
@@ -69,12 +69,12 @@ const resolveArray = <T extends Resolvable>(
         resolvedElements,
         additions: {
             map: additionsMap,
-            children: childAdditionsMap,
+            children: childAdditionsMap
         },
         removals: {
             map: removalsMap,
-            children: childRemovalsMap,
-        },
+            children: childRemovalsMap
+        }
     };
 };
 
@@ -90,14 +90,14 @@ export const resolveText = (
     return {
         element: {
             ...textNode,
-            text: resolvedElements.join(''),
+            text: resolvedElements.join('')
         },
         additions: {
-            text: additions,
+            text: additions
         },
         removals: {
-            text: removals,
-        },
+            text: removals
+        }
     };
 };
 
@@ -112,14 +112,14 @@ export const resolveElementWithContent = (
         element: {
             ...element,
             // If element.content was null, don't pass in [] for resolvedElements
-            content: element.content && resolvedElements,
+            content: element.content && resolvedElements
         },
         removals: {
-            content: removals,
+            content: removals
         },
         additions: {
-            content: additions,
-        },
+            content: additions
+        }
     };
 };
 
@@ -135,6 +135,6 @@ export const resolve = (diffResult: ProsemirrorDoc, registry: Registry) => {
     return {
         doc: result.element as ProsemirrorDoc,
         additions: result.additions,
-        removals: result.removals,
+        removals: result.removals
     };
 };

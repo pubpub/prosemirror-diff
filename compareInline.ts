@@ -25,7 +25,7 @@ const makeSymbolTable = () => {
 
     return {
         getSymbolForElement,
-        getElementForSymbol,
+        getElementForSymbol
     };
 };
 
@@ -81,7 +81,7 @@ const createElementsFromDiffResult = (diffResult, marksTable, atomicTable) => {
             result.push({
                 type: 'text',
                 text: pendingText,
-                marks: marksTable.getElementForSymbol(pendingMarkSymbol),
+                marks: marksTable.getElementForSymbol(pendingMarkSymbol)
             });
             cost += pendingText.length;
         }
@@ -132,7 +132,7 @@ export const compareInline = (oldVersion, newVersion, context) => {
         separator
     );
     const diffed = diffArrays(rSeq, aSeq, {
-        comparator: compareDiffElement,
+        comparator: compareDiffElement
     });
     let result = [];
     let cost = 0;
@@ -140,7 +140,7 @@ export const compareInline = (oldVersion, newVersion, context) => {
         const diffedEntry = diffed[i];
         const {
             result: subresult,
-            cost: subcost,
+            cost: subcost
         } = createElementsFromDiffResult(
             diffedEntry.value,
             marksTable,

@@ -14,39 +14,39 @@ const contentWeight = (element, weight) =>
 const contentNode = contentComparator => ({
     diff: {
         compare: createCompareObjects({
-            content: contentComparator,
+            content: contentComparator
         }),
-        weight: contentWeight,
+        weight: contentWeight
     },
     render: {
         resolve: resolveElementWithContent,
-        decorate: decorateNodeWithContent,
-    },
+        decorate: decorateNodeWithContent
+    }
 });
 
 const leafNode = {
     diff: {
         compare: createCompareObjects({}),
-        weight: () => 100,
+        weight: () => 100
     },
     render: {
         resolve: resolveElementWithContent,
-        decorate: decorateNodeWithContent,
-    },
+        decorate: decorateNodeWithContent
+    }
 };
 
 export const baseRegistry = {
     doc: {
         diff: {
             compare: createCompareObjects({
-                content: compareArray,
+                content: compareArray
             }),
-            weight: contentWeight,
+            weight: contentWeight
         },
         render: {
             resolve: resolveElementWithContent,
-            decorate: decorateNodeWithContent,
-        },
+            decorate: decorateNodeWithContent
+        }
     },
     paragraph: contentNode(compareInline),
     blockquote: contentNode(compareInline),
@@ -55,16 +55,16 @@ export const baseRegistry = {
         diff: {
             compare: createCompareObjects({
                 attrs: {
-                    level: compareByIdentity,
+                    level: compareByIdentity
                 },
-                content: compareInline,
+                content: compareInline
             }),
-            weight: contentWeight,
+            weight: contentWeight
         },
         render: {
             resolve: resolveElementWithContent,
-            decorate: decorateNodeWithContent,
-        },
+            decorate: decorateNodeWithContent
+        }
     },
     bullet_list: contentNode(compareArray),
     ordered_list: contentNode(compareArray),
@@ -73,29 +73,31 @@ export const baseRegistry = {
     list_item: contentNode(compareArray),
     text: {
         diff: {
-            weight: element => element.text.length,
+            weight: element => element.text.length
         },
         render: {
             resolve: resolveText,
-            decorate: decorateText,
-        },
+            decorate: decorateText
+        }
     },
     none: leafNode,
     image: {
         diff: {
             compare: createCompareObjects({
-                url: { default: null },
-                size: { default: 50 }, // number as percentage
-                align: { default: 'center' },
-                caption: { default: '' },
+                attrs: {
+                    url: compareByIdentity,
+                    size: compareByIdentity,
+                    align: compareByIdentity,
+                    caption: compareByIdentity
+                }
             }),
-            weight: () => 500,
+            weight: () => 500
         },
         render: {
             resolve: resolveElementWithContent,
-            decorate: decorateNodeWithContent,
-        },
-    },
+            decorate: decorateNodeWithContent
+        }
+    }
 };
 
 export const getTypeFromRegistry = (registry: Registry, type: string) => {

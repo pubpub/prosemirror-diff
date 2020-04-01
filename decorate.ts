@@ -10,17 +10,17 @@ import {
     ProsemirrorDoc,
     ResolveAdditions,
     ResolveRemovals,
-    Registry,
+    Registry
 } from './types';
 
 const additionDecoration = (from: number, to: number, isBlock: boolean) => {
     if (isBlock) {
         return Decoration.node(from, to, {
-            class: 'prosemirror-diff-add',
+            class: 'prosemirror-diff-add'
         });
     } else {
         return Decoration.inline(from, to, {
-            class: 'prosemirror-diff-add',
+            class: 'prosemirror-diff-add'
         });
     }
 };
@@ -53,7 +53,7 @@ const removalDecoration = (
               };
     return Decoration.widget(position, getDomNode, {
         class: 'prosemirror-diff-remove',
-        removal: element,
+        removal: element
     });
 };
 
@@ -99,7 +99,7 @@ export const decorateNodeWithContent: DecoratorFn = (node, context) => {
         offset,
         decorate,
         additions,
-        removals,
+        removals
     } = context;
     const removalsMap = removals && removals.content.map;
     const childRemovalsMap = removals && removals.content.children;
@@ -137,7 +137,7 @@ export const decorateNodeWithContent: DecoratorFn = (node, context) => {
                 docPosition + 1,
                 childAdditionsMap && childAdditionsMap.get(index),
                 childRemovalsMap && childRemovalsMap.get(index)
-            ),
+            )
         ];
     });
 
@@ -165,7 +165,7 @@ export const decorate = (
             offset,
             decorate,
             additions,
-            removals,
+            removals
         });
     };
 

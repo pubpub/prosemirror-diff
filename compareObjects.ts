@@ -14,8 +14,6 @@ export const createCompareObjects = (
 
     return (oldVersion: {}, newVersion: {}, context: CompareContext) => {
         const { replace, weight, memoizer, budget = Infinity } = context;
-
-        incomparable;
         let compareCost = 0;
 
         const compareObj = (innerSchema: {}, innerOld: {}, innerNew: {}) => {
@@ -68,7 +66,7 @@ export const createCompareObjects = (
         if (compareResult === incomparable) {
             return {
                 result: replace(oldVersion, newVersion),
-                cost: weight(oldVersion) + weight(newVersion),
+                cost: weight(oldVersion) + weight(newVersion)
             };
         }
         return { result: compareResult, cost: compareCost };

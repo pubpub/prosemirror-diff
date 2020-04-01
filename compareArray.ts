@@ -45,9 +45,8 @@ const createStateMap = <V>() => {
 };
 
 const createBestStateMap = <T>() => {
-    const { getValueAtPosition, setValueAtPosition } = createStateMap<
-        State<T>
-    >();
+    const stateMap = createStateMap<State<T>>();
+    const { getValueAtPosition, setValueAtPosition } = stateMap;
 
     const markState = (state: State<T>) => {
         const { a, r } = state;
@@ -113,7 +112,7 @@ export const compareArray = <T>(
             r,
             cost,
             result,
-            minimumCost: cost + getMinimumCostToGoal(a, r),
+            minimumCost: cost + getMinimumCostToGoal(a, r)
         };
     };
 
@@ -157,7 +156,7 @@ export const compareArray = <T>(
         }
         if (hasAnotherAddition && hasAnotherRemoval) {
             const subcompare = compare(oldVersion[r + 1], newVersion[a + 1], {
-                ...context,
+                ...context
             });
             if (subcompare !== incomparable) {
                 const { cost: subcost, result: subresult } = subcompare;

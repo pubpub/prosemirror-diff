@@ -7,20 +7,20 @@ import {
     ProsemirrorDoc,
     Memoizer,
     Registry,
-    CompareResult,
+    CompareResult
 } from './types';
 
 const add: Add = item => {
     return {
         [isDiffObject]: true,
-        add: item,
+        add: item
     };
 };
 
 const remove: Remove = item => {
     return {
         [isDiffObject]: true,
-        remove: item,
+        remove: item
     };
 };
 
@@ -28,7 +28,7 @@ const replace: Replace = (removed, added) => {
     return {
         [isDiffObject]: true,
         ...remove(removed),
-        ...add(added),
+        ...add(added)
     };
 };
 
@@ -63,7 +63,7 @@ const innerDiff = (
         replace,
         compare,
         weight,
-        memoizer,
+        memoizer
     });
 };
 

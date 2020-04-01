@@ -73,7 +73,7 @@ const makeMemoStore = () => {
         clearHitRate: () => {
             hits = 0;
             misses = 0;
-        },
+        }
     };
 };
 
@@ -95,6 +95,6 @@ export const makeMemoizer = () => {
         compare: makeMemoize(memoizeCompareFn),
         weight: makeMemoize(memoizeWeightFn),
         getHitRate: store.getHitRate,
-        clearHitRate: store.clearHitRate,
+        clearHitRate: store.clearHitRate
     };
 };

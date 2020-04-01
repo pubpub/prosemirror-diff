@@ -25,5 +25,10 @@
     "prosemirror-model": "^1.7.1",
     "prosemirror-tables": "^0.8.1",
     "prosemirror-view": "^1.9.11"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "tabWidth": 4,
+    "singleQuote": true
   }
 }
